@@ -68,6 +68,34 @@
         }
     });
 
+    app.models.Task = BaseModel.extend({
+        moveTo: function (status, sprint, order) {
+            var updates = {
+                status: status,
+                sprint: sprint,
+                order: order
+            },
+            today = new Date().toISOString().replace(/T.*/g, '');
+            if (!updates.sprint) {
+                updates.status = 1;
+            }
+            if ((updates.status === 2) || (updates.status > 2 && !this.get('started'))) {
+                updates.started = today;
+            } 
+            else if (updates.status < 2 && this.get('started')) {
+                updates.started = null;
+            }
+            // Completed Tasks
+            if (updates.status === 4) {
+                updates.completed = today;
+            } 
+            else if (updates.status < 4 && this.get('completed')) {
+                updates.completed = null;
+            }
+            this.save(updates);
+        }
+    });
+
     app.session = new Session();
 
 })(jQuery, Backbone, _, app);
